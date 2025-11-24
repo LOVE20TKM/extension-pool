@@ -1,0 +1,2 @@
+@extension/=lib/extension/
+@core/=lib/extension/lib/core/src/
