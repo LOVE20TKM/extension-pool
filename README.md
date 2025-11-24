@@ -1,66 +1,53 @@
-## Foundry
+# 链群类扩展协议（初稿）
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+# 0. 背景
 
-Foundry consists of:
+随着行动参与地址和治理地址的快速增加，参与代币数量快速提升，原有的基于概率抽取验证的铸币方式，越来越无法满足社群的快速增长，产生了如下的各种挑战
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- 铸币体验下降
+- 社群裂变趋缓
+- 验证成本上升
+- 验证异常不公
+- 社群服务匮乏
 
-## Documentation
+如何彻底解决上述问题，就是链群类扩展协议诞生的背景。链群类扩展协议包括三个扩展协议
 
-https://book.getfoundry.sh/
+- [人工验证链群行动扩展协议](./docs/人工验证链群行动扩展协议.md)
+- [自动验证链群行动扩展协议（基类）](./docs/自动验证链群行动扩展协议（基类）.md)
+- [链群服务激励扩展协议](./docs/链群服务激励扩展协议.md)
 
-## Usage
+## 1. 核心优势
 
-### Build
+### 1.1 参与体验提升
 
-```shell
-$ forge build
-```
+- 行动者：从概率铸币变为每轮确定铸币，参与门槛大幅降低，铸币体验大幅提升
 
-### Test
+### 1.2 激励机制完善
 
-```shell
-$ forge test
-```
+- 激励性：通过为链群里的行动者提供各种服务，以获得链群服务激励
+- 规模化：去中心化链群机制，将从个体行动者发展，升级为以链群为单位的外部社群大规模整体链上迁入
+- 专业化：竞争促进以链群为单位的服务质量提升，甚至专业化团队形成
 
-### Format
+### 1.3 治理模式优化
 
-```shell
-$ forge fmt
-```
+- 效率：治理者从繁重验证工作中解放，聚焦行动决策和监督
+- 公平：不信任投票机制保障，从上而下监督链群服务者；行动者用脚投票，自下而上选择好的链群，淘汰坏的链群
 
-### Gas Snapshots
+## 2. 行动发起与参与
 
-```shell
-$ forge snapshot
-```
+### 2.1 发起行动
 
-### Anvil
+发起链群行动，需同步发起两个具体行动：
 
-```shell
-$ anvil
-```
+- 行动者激励行动：行动白名单设置[人工验证链群行动扩展协议](./docs/人工验证链群行动扩展协议.md)或[自动验证链群行动扩展协议](./docs/自动验证链群行动扩展协议（基类）.md)
+- 链群服务者激励行动：行动白名单设置[链群服务者激励扩展协议](./docs/链群服务激励扩展协议.md)
 
-### Deploy
+### 2.1 行动者参与
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+在链群行动中，行动者选择一个链群参与行动，并在链群服务者验证后，获得行动铸币激励
 
-### Cast
+### 2.2 链群服务者参与
 
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+- 在[链群协议](https://love20tkm.github.io/group/)里铸造自己的链群
+- 并在链群行动中启动链群，为行动者提供技术支持及链上验证服务（人工验证的链群行动）
+- 参与链群服务者激励行动，并铸造激励
