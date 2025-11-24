@@ -1,3 +1,6 @@
 [submodule "lib/extension"]
 	path = lib/extension
 	url = https://github.com/LOVE20TKM/extension.git
+[submodule "lib/group"]
+	path = lib/group
+	url = https://github.com/LOVE20TKM/group
