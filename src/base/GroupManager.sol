@@ -201,10 +201,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     function setGroupVerifier(
         uint256 groupId,
         address verifier
-    ) public virtual onlyGroupOwner(groupId) {
-        // Check if group has been started
-        if (_groups[groupId].startedRound == 0) revert GroupNotFound();
-
+    ) public virtual onlyGroupOwner(groupId) groupActive(groupId) {
         _groups[groupId].verifier = verifier;
         emit GroupVerifierSet(groupId, verifier);
     }
