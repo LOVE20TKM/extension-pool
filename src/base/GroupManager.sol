@@ -367,9 +367,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     }
 
     /// @inheritdoc IGroupManager
-    function getExpandableInfo(
-        uint256 groupId
-    )
+    function getExpandableInfo()
         public
         view
         returns (
@@ -380,18 +378,17 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
             uint256 additionalStakeAllowed
         )
     {
-        GroupInfo memory group = _groups[groupId];
-        address owner = _groupAddress.ownerOf(groupId);
+        address owner = msg.sender;
 
-        currentCapacity = group.capacity;
-        currentStake = group.stakedAmount;
+        // Calculate totals across all active groups
+        (currentCapacity, currentStake) = _getTotalCapacityAndStakeByOwner(
+            owner
+        );
         maxCapacity = _calculateMaxCapacityForOwner(owner);
         maxStake = maxCapacity / stakingMultiplier;
 
-        // Calculate total staked by owner across all active groups
-        uint256 totalOwnerStake = _getTotalStakedByOwner(owner);
-        if (maxStake > totalOwnerStake) {
-            additionalStakeAllowed = maxStake - totalOwnerStake;
+        if (maxStake > currentStake) {
+            additionalStakeAllowed = maxStake - currentStake;
         }
     }
 
@@ -502,6 +499,21 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
             GroupInfo storage group = _groups[groupId];
             // Only count active groups (started and not stopped)
             if (group.startedRound != 0 && !group.isStopped) {
+                totalStaked += group.stakedAmount;
+            }
+        }
+    }
+
+    /// @dev Get total capacity and staked amount by owner across all active groups
+    function _getTotalCapacityAndStakeByOwner(
+        address owner
+    ) internal view returns (uint256 totalCapacity, uint256 totalStaked) {
+        uint256 nftBalance = _groupAddress.balanceOf(owner);
+        for (uint256 i = 0; i < nftBalance; i++) {
+            uint256 groupId = _groupAddress.tokenOfOwnerByIndex(owner, i);
+            GroupInfo storage group = _groups[groupId];
+            if (group.startedRound != 0 && !group.isStopped) {
+                totalCapacity += group.capacity;
                 totalStaked += group.stakedAmount;
             }
         }
