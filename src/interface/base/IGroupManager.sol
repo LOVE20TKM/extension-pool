@@ -40,9 +40,11 @@ interface IGroupManager {
         uint256 returnedStake
     );
 
-    event GroupDescriptionUpdated(
+    event GroupInfoUpdated(
         uint256 indexed groupId,
-        string newDescription
+        string newDescription,
+        uint256 newMinJoinAmount,
+        uint256 newMaxJoinAmount
     );
 
     event GroupVerifierSet(uint256 indexed groupId, address indexed verifier);
@@ -86,10 +88,12 @@ interface IGroupManager {
     /// @notice Stop a group
     function stopGroup(uint256 groupId) external;
 
-    /// @notice Update group description
-    function updateGroupDescription(
+    /// @notice Update group info (description, min/max join amounts)
+    function updateGroupInfo(
         uint256 groupId,
-        string memory newDescription
+        string memory newDescription,
+        uint256 newMinJoinAmount,
+        uint256 newMaxJoinAmount
     ) external;
 
     /// @notice Set group verifier

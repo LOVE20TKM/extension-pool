@@ -197,12 +197,27 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     }
 
     /// @inheritdoc IGroupManager
-    function updateGroupDescription(
+    function updateGroupInfo(
         uint256 groupId,
-        string memory newDescription
+        string memory newDescription,
+        uint256 newMinJoinAmount,
+        uint256 newMaxJoinAmount
     ) public virtual onlyGroupOwner(groupId) groupActive(groupId) {
-        _groups[groupId].description = newDescription;
-        emit GroupDescriptionUpdated(groupId, newDescription);
+        if (newMaxJoinAmount != 0 && newMaxJoinAmount < newMinJoinAmount) {
+            revert InvalidGroupParameters();
+        }
+
+        GroupInfo storage group = _groups[groupId];
+        group.description = newDescription;
+        group.groupMinJoinAmount = newMinJoinAmount;
+        group.groupMaxJoinAmount = newMaxJoinAmount;
+
+        emit GroupInfoUpdated(
+            groupId,
+            newDescription,
+            newMinJoinAmount,
+            newMaxJoinAmount
+        );
     }
 
     /// @inheritdoc IGroupManager

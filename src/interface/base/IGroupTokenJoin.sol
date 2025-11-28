@@ -6,6 +6,8 @@ interface IGroupTokenJoin {
     // ERRORS
     // ============================================
 
+    error InvalidAddress();
+    error InvalidAmount();
     error AlreadyInOtherGroup();
     error NotInGroup();
     error AmountBelowMinimum();

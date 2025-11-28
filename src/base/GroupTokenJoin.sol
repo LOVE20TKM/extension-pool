@@ -61,7 +61,7 @@ abstract contract GroupTokenJoin is
     /// @param joinTokenAddress_ The token that can be used to join groups
     constructor(address joinTokenAddress_) {
         if (joinTokenAddress_ == address(0)) {
-            revert IGroupTokenJoin.NotInGroup();
+            revert IGroupTokenJoin.InvalidAddress();
         }
         joinTokenAddress = joinTokenAddress_;
         _joinToken = IERC20(joinTokenAddress_);
@@ -73,6 +73,8 @@ abstract contract GroupTokenJoin is
 
     /// @notice Join a group with tokens (can be called multiple times)
     function join(uint256 groupId, uint256 amount) public virtual nonReentrant {
+        if (amount == 0) revert IGroupTokenJoin.InvalidAmount();
+
         _beforeJoin(groupId, msg.sender);
 
         JoinInfo storage participation = _joinInfo[msg.sender];
@@ -94,7 +96,7 @@ abstract contract GroupTokenJoin is
             uint256 effectiveMin = group.groupMinJoinAmount > minJoinAmount
                 ? group.groupMinJoinAmount
                 : minJoinAmount;
-            if (amount == 0 || amount < effectiveMin) {
+            if (amount < effectiveMin) {
                 revert IGroupTokenJoin.AmountBelowMinimum();
             }
         }
