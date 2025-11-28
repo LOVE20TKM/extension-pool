@@ -22,7 +22,8 @@ abstract contract LOVE20ExtensionBaseGroupTokenJoin is
 
     /// @notice Initialize the token join group extension
     /// @param factory_ The factory contract address
-    /// @param groupNFT_ The LOVE20Group NFT contract address
+    /// @param tokenAddress_ The token address
+    /// @param groupAddress_ The LOVE20Group NFT contract address
     /// @param joinTokenAddress_ The token used for joining groups
     /// @param minGovernanceVoteRatio_ Minimum governance vote ratio
     /// @param capacityMultiplier_ Capacity multiplier
@@ -30,7 +31,8 @@ abstract contract LOVE20ExtensionBaseGroupTokenJoin is
     /// @param maxJoinAmountMultiplier_ Max actor amount multiplier
     constructor(
         address factory_,
-        address groupNFT_,
+        address tokenAddress_,
+        address groupAddress_,
         address joinTokenAddress_,
         uint256 minGovernanceVoteRatio_,
         uint256 capacityMultiplier_,
@@ -39,7 +41,8 @@ abstract contract LOVE20ExtensionBaseGroupTokenJoin is
     )
         LOVE20ExtensionBaseGroup(
             factory_,
-            groupNFT_,
+            tokenAddress_,
+            groupAddress_,
             minGovernanceVoteRatio_,
             capacityMultiplier_,
             stakingMultiplier_,

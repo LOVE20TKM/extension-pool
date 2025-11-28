@@ -33,8 +33,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     // ============================================
 
     /// @notice Group NFT contract
-    /// @dev Use getGroupNFT() to access externally
-    ILOVE20Group internal immutable _groupNFT;
+    ILOVE20Group internal immutable _groupAddress;
 
     /// @notice Mapping from group ID to group info
     mapping(uint256 => GroupInfo) internal _groups;
@@ -51,13 +50,14 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
 
     constructor(
         address factory_,
-        address groupNFT_,
+        address tokenAddress_,
+        address groupAddress_,
         uint256 minGovernanceVoteRatio_,
         uint256 capacityMultiplier_,
         uint256 stakingMultiplier_,
         uint256 maxJoinAmountMultiplier_
-    ) ExtensionCore(factory_) {
-        _groupNFT = ILOVE20Group(groupNFT_);
+    ) ExtensionCore(factory_, tokenAddress_) {
+        _groupAddress = ILOVE20Group(groupAddress_);
         minGovernanceVoteRatio = minGovernanceVoteRatio_;
         capacityMultiplier = capacityMultiplier_;
         stakingMultiplier = stakingMultiplier_;
@@ -70,13 +70,14 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
 
     /// @dev Only group NFT owner can call
     modifier onlyGroupOwner(uint256 groupId) {
-        if (_groupNFT.ownerOf(groupId) != msg.sender) revert OnlyGroupOwner();
+        if (_groupAddress.ownerOf(groupId) != msg.sender)
+            revert OnlyGroupOwner();
         _;
     }
 
     /// @dev Only group owner or verifier can call
     modifier onlyGroupOwnerOrVerifier(uint256 groupId) {
-        address owner = _groupNFT.ownerOf(groupId);
+        address owner = _groupAddress.ownerOf(groupId);
         if (msg.sender != owner && msg.sender != _groups[groupId].verifier) {
             revert OnlyGroupOwnerOrVerifier();
         }
@@ -118,7 +119,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         }
 
         // Capacity check (abstract method)
-        address owner = _groupNFT.ownerOf(groupId);
+        address owner = _groupAddress.ownerOf(groupId);
         _checkCanStartGroup(owner, stakedAmount);
 
         // Transfer staking tokens
@@ -156,7 +157,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         GroupInfo storage group = _groups[groupId];
         uint256 newStakedAmount = group.stakedAmount + additionalStake;
 
-        address owner = _groupNFT.ownerOf(groupId);
+        address owner = _groupAddress.ownerOf(groupId);
         _checkCanExpandGroup(owner, newStakedAmount);
 
         _stakingToken.transferFrom(msg.sender, address(this), additionalStake);
@@ -211,8 +212,8 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     // ============================================
 
     /// @inheritdoc IGroupManager
-    function groupNFT() external view returns (address) {
-        return address(_groupNFT);
+    function groupAddress() external view returns (address) {
+        return address(_groupAddress);
     }
 
     /// @inheritdoc IGroupManager
@@ -225,7 +226,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     /// @inheritdoc IGroupManager
     /// @dev Will revert if groupId NFT doesn't exist or has been burned
     function getGroupOwner(uint256 groupId) external view returns (address) {
-        return _groupNFT.ownerOf(groupId);
+        return _groupAddress.ownerOf(groupId);
     }
 
     /// @inheritdoc IGroupManager
@@ -233,13 +234,13 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         address owner
     ) external view returns (uint256[] memory) {
         // First, get all NFTs owned by the address
-        uint256 nftBalance = _groupNFT.balanceOf(owner);
+        uint256 nftBalance = _groupAddress.balanceOf(owner);
         uint256[] memory tempResult = new uint256[](nftBalance);
         uint256 count = 0;
 
         // Check which owned NFTs have been started as groups
         for (uint256 i = 0; i < nftBalance; i++) {
-            uint256 groupId = _groupNFT.tokenOfOwnerByIndex(owner, i);
+            uint256 groupId = _groupAddress.tokenOfOwnerByIndex(owner, i);
             // Check if this group has been started
             if (_groups[groupId].startedRound != 0) {
                 tempResult[count++] = groupId;
@@ -271,7 +272,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         address verifier,
         uint256 groupId
     ) public view returns (bool) {
-        address owner = _groupNFT.ownerOf(groupId);
+        address owner = _groupAddress.ownerOf(groupId);
         return verifier == owner || verifier == _groups[groupId].verifier;
     }
 

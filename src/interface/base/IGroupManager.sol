@@ -52,7 +52,7 @@ interface IGroupManager {
     // ============================================
 
     /// @notice Group information structure
-    /// @dev owner is not stored, retrieved via _groupNFT.ownerOf(groupId)
+    /// @dev owner is not stored, retrieved via _groupAddress.ownerOf(groupId)
     struct GroupInfo {
         uint256 groupId;
         address verifier;
@@ -100,7 +100,7 @@ interface IGroupManager {
     // ============================================
 
     /// @notice Get Group NFT contract address
-    function groupNFT() external view returns (address);
+    function groupAddress() external view returns (address);
 
     /// @notice Get group information
     function getGroupInfo(
