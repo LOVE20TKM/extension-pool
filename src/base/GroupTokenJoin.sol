@@ -87,8 +87,8 @@ abstract contract GroupTokenJoin is
 
         GroupInfo storage group = _groups[groupId];
 
-        if (group.startedRound == 0 || group.isStopped) {
-            revert IGroupTokenJoin.CannotJoinStoppedGroup();
+        if (group.activatedRound == 0 || group.isDeactivated) {
+            revert IGroupTokenJoin.CannotJoinDeactivatedGroup();
         }
 
         // Check minimum only for first join
@@ -218,11 +218,11 @@ abstract contract GroupTokenJoin is
         JoinInfo storage participation = _joinInfo[account];
         bool isFirstJoin = participation.groupId == 0;
 
-        if (group.startedRound == 0) {
+        if (group.activatedRound == 0) {
             return (false, "Group does not exist");
         }
-        if (group.isStopped) {
-            return (false, "Group is stopped");
+        if (group.isDeactivated) {
+            return (false, "Group is deactivated");
         }
         if (!isFirstJoin && participation.groupId != groupId) {
             return (false, "Already in other group");

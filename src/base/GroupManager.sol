@@ -41,8 +41,8 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     /// @notice Mapping from group ID to group info
     mapping(uint256 => GroupInfo) internal _groups;
 
-    /// @notice List of all started group IDs (including stopped)
-    uint256[] internal _allStartedGroupIds;
+    /// @notice List of all activated group IDs (including deactivated)
+    uint256[] internal _allActivatedGroupIds;
 
     /// @notice Staking token (initialized on first use)
     IERC20 internal _stakingToken;
@@ -92,7 +92,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     /// @dev Group must be active
     modifier groupActive(uint256 groupId) {
         GroupInfo storage group = _groups[groupId];
-        if (group.startedRound == 0 || group.isStopped) {
+        if (group.activatedRound == 0 || group.isDeactivated) {
             revert GroupNotActive();
         }
         _;
@@ -103,7 +103,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     // ============================================
 
     /// @inheritdoc IGroupManager
-    function startGroup(
+    function activateGroup(
         uint256 groupId,
         string memory description,
         uint256 stakedAmount,
@@ -112,8 +112,8 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     ) public virtual onlyGroupOwner(groupId) returns (bool) {
         GroupInfo storage group = _groups[groupId];
 
-        // Check if already started
-        if (group.startedRound != 0) revert GroupAlreadyStarted();
+        // Check if already activated
+        if (group.activatedRound != 0) revert GroupAlreadyActivated();
 
         // Validate parameters
         if (stakedAmount == 0) revert InvalidGroupParameters();
@@ -127,7 +127,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
 
         // Capacity check
         address owner = _groupAddress.ownerOf(groupId);
-        _checkCanStartGroup(owner, stakedAmount);
+        _checkCanActivateGroup(owner, stakedAmount);
 
         // Transfer staking tokens
         if (address(_stakingToken) == address(0)) {
@@ -146,11 +146,11 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         group.capacity = capacity;
         group.groupMinJoinAmount = groupMinJoinAmount;
         group.groupMaxJoinAmount = groupMaxJoinAmount;
-        group.startedRound = currentRound;
+        group.activatedRound = currentRound;
 
-        _allStartedGroupIds.push(groupId);
+        _allActivatedGroupIds.push(groupId);
 
-        emit GroupStarted(groupId, owner, stakedAmount, capacity, currentRound);
+        emit GroupActivated(groupId, owner, stakedAmount, capacity, currentRound);
         return true;
     }
 
@@ -177,23 +177,23 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     }
 
     /// @inheritdoc IGroupManager
-    function stopGroup(uint256 groupId) public virtual onlyGroupOwner(groupId) {
+    function deactivateGroup(uint256 groupId) public virtual onlyGroupOwner(groupId) {
         GroupInfo storage group = _groups[groupId];
 
-        if (group.startedRound == 0) revert GroupNotFound();
-        if (group.isStopped) revert GroupAlreadyStopped();
+        if (group.activatedRound == 0) revert GroupNotFound();
+        if (group.isDeactivated) revert GroupAlreadyDeactivated();
 
         uint256 currentRound = _join.currentRound();
-        if (currentRound == group.startedRound)
-            revert CannotStopInStartedRound();
+        if (currentRound == group.activatedRound)
+            revert CannotDeactivateInActivatedRound();
 
-        group.isStopped = true;
-        group.stoppedRound = currentRound;
+        group.isDeactivated = true;
+        group.deactivatedRound = currentRound;
 
         uint256 stakedAmount = group.stakedAmount;
         _stakingToken.transfer(msg.sender, stakedAmount);
 
-        emit GroupStopped(groupId, currentRound, stakedAmount);
+        emit GroupDeactivated(groupId, currentRound, stakedAmount);
     }
 
     /// @inheritdoc IGroupManager
@@ -260,16 +260,16 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         uint256[] memory tempResult = new uint256[](nftBalance);
         uint256 count = 0;
 
-        // Check which owned NFTs have been started as groups
+        // Check which owned NFTs have been activated as groups
         for (uint256 i = 0; i < nftBalance; i++) {
             uint256 groupId = _groupAddress.tokenOfOwnerByIndex(owner, i);
-            // Check if this group has been started
-            if (_groups[groupId].startedRound != 0) {
+            // Check if this group has been activated
+            if (_groups[groupId].activatedRound != 0) {
                 tempResult[count++] = groupId;
             }
         }
 
-        // Resize array to actual count of started groups
+        // Resize array to actual count of activated groups
         uint256[] memory result = new uint256[](count);
         for (uint256 i = 0; i < count; i++) {
             result[i] = tempResult[i];
@@ -279,14 +279,14 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     }
 
     /// @inheritdoc IGroupManager
-    function getAllStartedGroupIds() external view returns (uint256[] memory) {
-        return _allStartedGroupIds;
+    function getAllActivatedGroupIds() external view returns (uint256[] memory) {
+        return _allActivatedGroupIds;
     }
 
     /// @inheritdoc IGroupManager
     function isGroupActive(uint256 groupId) external view returns (bool) {
         GroupInfo storage group = _groups[groupId];
-        return group.startedRound != 0 && !group.isStopped;
+        return group.activatedRound != 0 && !group.isDeactivated;
     }
 
     /// @notice Check if address can verify a group
@@ -340,7 +340,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     }
 
     /// @inheritdoc IGroupManager
-    function getMinStakeToStart() public view returns (uint256) {
+    function getMinStakeToActivate() public view returns (uint256) {
         uint256 totalMinted = ILOVE20Token(tokenAddress).totalSupply();
         uint256 minCapacity = (totalMinted *
             minGovernanceVoteRatio *
@@ -396,8 +396,8 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     // CAPACITY CALCULATION (INTERNAL)
     // ============================================
 
-    /// @dev Check if owner can start a group with given stake
-    function _checkCanStartGroup(
+    /// @dev Check if owner can activate a group with given stake
+    function _checkCanActivateGroup(
         address owner,
         uint256 stakedAmount
     ) internal view virtual {
@@ -497,8 +497,8 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         for (uint256 i = 0; i < nftBalance; i++) {
             uint256 groupId = _groupAddress.tokenOfOwnerByIndex(owner, i);
             GroupInfo storage group = _groups[groupId];
-            // Only count active groups (started and not stopped)
-            if (group.startedRound != 0 && !group.isStopped) {
+            // Only count active groups (activated and not deactivated)
+            if (group.activatedRound != 0 && !group.isDeactivated) {
                 totalStaked += group.stakedAmount;
             }
         }
@@ -512,7 +512,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         for (uint256 i = 0; i < nftBalance; i++) {
             uint256 groupId = _groupAddress.tokenOfOwnerByIndex(owner, i);
             GroupInfo storage group = _groups[groupId];
-            if (group.startedRound != 0 && !group.isStopped) {
+            if (group.activatedRound != 0 && !group.isDeactivated) {
                 totalCapacity += group.capacity;
                 totalStaked += group.stakedAmount;
             }

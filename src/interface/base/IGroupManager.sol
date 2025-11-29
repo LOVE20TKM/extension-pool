@@ -7,20 +7,20 @@ interface IGroupManager {
     // ============================================
 
     error GroupNotFound();
-    error GroupAlreadyStarted();
-    error GroupAlreadyStopped();
+    error GroupAlreadyActivated();
+    error GroupAlreadyDeactivated();
     error OnlyGroupOwner();
     error OnlyGroupOwnerOrVerifier();
     error GroupNotActive();
     error InvalidGroupParameters();
-    error CannotStopInStartedRound();
+    error CannotDeactivateInActivatedRound();
     error NotGroupNFTOwner();
 
     // ============================================
     // EVENTS
     // ============================================
 
-    event GroupStarted(
+    event GroupActivated(
         uint256 indexed groupId,
         address indexed owner,
         uint256 stakedAmount,
@@ -34,7 +34,7 @@ interface IGroupManager {
         uint256 newCapacity
     );
 
-    event GroupStopped(
+    event GroupDeactivated(
         uint256 indexed groupId,
         uint256 round,
         uint256 returnedStake
@@ -64,17 +64,17 @@ interface IGroupManager {
         uint256 groupMinJoinAmount;
         uint256 groupMaxJoinAmount; // 0 = no limit
         uint256 totalJoinedAmount;
-        bool isStopped;
-        uint256 startedRound; // 0 = not started
-        uint256 stoppedRound; // 0 = not stopped
+        bool isDeactivated;
+        uint256 activatedRound; // 0 = not activated
+        uint256 deactivatedRound; // 0 = not deactivated
     }
 
     // ============================================
     // FUNCTIONS
     // ============================================
 
-    /// @notice Start a group (must own Group NFT)
-    function startGroup(
+    /// @notice Activate a group (must own Group NFT)
+    function activateGroup(
         uint256 groupId,
         string memory description,
         uint256 stakedAmount,
@@ -85,8 +85,8 @@ interface IGroupManager {
     /// @notice Expand group capacity
     function expandGroup(uint256 groupId, uint256 additionalStake) external;
 
-    /// @notice Stop a group
-    function stopGroup(uint256 groupId) external;
+    /// @notice Deactivate a group
+    function deactivateGroup(uint256 groupId) external;
 
     /// @notice Update group info (description, min/max join amounts)
     function updateGroupInfo(
@@ -119,8 +119,8 @@ interface IGroupManager {
         address owner
     ) external view returns (uint256[] memory);
 
-    /// @notice Get all started group IDs
-    function getAllStartedGroupIds() external view returns (uint256[] memory);
+    /// @notice Get all activated group IDs
+    function getAllActivatedGroupIds() external view returns (uint256[] memory);
 
     /// @notice Check if group is active
     function isGroupActive(uint256 groupId) external view returns (bool);
@@ -175,8 +175,8 @@ interface IGroupManager {
         address owner
     ) external view returns (uint256);
 
-    /// @notice Get minimum stake required to start a group
-    function getMinStakeToStart() external view returns (uint256);
+    /// @notice Get minimum stake required to activate a group
+    function getMinStakeToActivate() external view returns (uint256);
 
     /// @notice Get remaining capacity for a group
     function getRemainingCapacity(

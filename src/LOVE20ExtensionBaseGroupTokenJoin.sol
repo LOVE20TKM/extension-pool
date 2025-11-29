@@ -82,7 +82,7 @@ abstract contract LOVE20ExtensionBaseGroupTokenJoin is
     /// @notice Get total joined value across all groups
     function joinedValue() public view override returns (uint256) {
         uint256 total = 0;
-        uint256[] memory groupIds = this.getAllStartedGroupIds();
+        uint256[] memory groupIds = this.getAllActivatedGroupIds();
         for (uint256 i = 0; i < groupIds.length; i++) {
             total += _groups[groupIds[i]].totalJoinedAmount;
         }
