@@ -56,9 +56,9 @@ interface IGroupManager {
         uint256 groupMinJoinAmount;
         uint256 groupMaxJoinAmount; // 0 = no limit
         uint256 totalJoinedAmount;
-        bool isDeactivated;
-        uint256 activatedRound; // 0 = not activated
-        uint256 deactivatedRound; // 0 = not deactivated
+        bool isActive;
+        uint256 activatedRound; // 0 = never activated
+        uint256 deactivatedRound; // 0 = never deactivated
     }
 
     // ============ Write Functions ============

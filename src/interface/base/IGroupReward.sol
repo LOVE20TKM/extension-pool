@@ -1,39 +1,36 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
+import {
+    IExtensionReward
+} from "@extension/src/interface/base/IExtensionReward.sol";
+
 /// @title IGroupReward
 /// @notice Interface for group reward queries
-interface IGroupReward {
+interface IGroupReward is IExtensionReward {
     // ============ Errors ============
 
-    error RewardAlreadyClaimed();
-    error NoRewardAvailable();
-    error RoundNotFinalized();
+    error RoundHasVerifiedGroups();
 
     // ============ Events ============
 
-    event RewardClaimed(
-        uint256 indexed round,
-        uint256 indexed groupId,
-        address indexed account,
-        uint256 reward,
-        uint256 burned
-    );
+    event UnclaimedRewardBurned(uint256 indexed round, uint256 amount);
 
-    // ============ Structs ============
+    // ============ Functions ============
 
-    struct RewardInfo {
-        uint256 theoreticalReward;
-        uint256 actualReward;
-        uint256 burnedReward;
-        bool claimed;
-    }
-
-    // ============ View Functions ============
-
+    /// @notice Burn unclaimed reward when no group submitted verification in a round
+    function burnUnclaimedReward(uint256 round) external;
     function rewardByGroupId(
         uint256 round,
         uint256 groupId
+    )
+        external
+        view
+        returns (uint256 theoretical, uint256 actual, uint256 burned);
+
+    function rewardByGroupOwner(
+        uint256 round,
+        address groupOwner
     )
         external
         view

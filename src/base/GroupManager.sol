@@ -59,8 +59,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
 
     modifier groupActive(uint256 groupId) {
         GroupInfo storage group = _groupInfo[groupId];
-        if (group.activatedRound == 0 || group.isDeactivated)
-            revert GroupNotActive();
+        if (!group.isActive) revert GroupNotActive();
         _;
     }
 
@@ -75,7 +74,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     ) public virtual onlyGroupOwner(groupId) returns (bool) {
         GroupInfo storage group = _groupInfo[groupId];
 
-        if (group.activatedRound != 0) revert GroupAlreadyActivated();
+        if (group.isActive) revert GroupAlreadyActivated();
         if (stakedAmount == 0) revert InvalidGroupParameters();
         if (
             groupMaxJoinAmount != 0 && groupMaxJoinAmount < groupMinJoinAmount
@@ -109,6 +108,8 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         group.groupMaxJoinAmount = groupMaxJoinAmount;
         group.activatedRound = currentRound;
 
+        group.isActive = true;
+        group.deactivatedRound = 0;
         _activeGroupIds.push(groupId);
 
         emit GroupActivated(
@@ -155,14 +156,16 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         GroupInfo storage group = _groupInfo[groupId];
 
         if (group.activatedRound == 0) revert GroupNotFound();
-        if (group.isDeactivated) revert GroupAlreadyDeactivated();
+        if (!group.isActive) revert GroupAlreadyDeactivated();
 
         uint256 currentRound = _join.currentRound();
         if (currentRound == group.activatedRound)
             revert CannotDeactivateInActivatedRound();
 
-        group.isDeactivated = true;
+        group.isActive = false;
         group.deactivatedRound = currentRound;
+
+        _removeFromActiveGroupIds(groupId);
 
         uint256 stakedAmount = group.stakedAmount;
         IERC20(STAKE_TOKEN_ADDRESS).transfer(msg.sender, stakedAmount);
@@ -221,7 +224,8 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
                 owner,
                 i
             );
-            if (_groupInfo[groupId].activatedRound != 0) {
+            GroupInfo storage group = _groupInfo[groupId];
+            if (group.isActive) {
                 tempResult[count++] = groupId;
             }
         }
@@ -246,8 +250,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
     }
 
     function isGroupActive(uint256 groupId) external view returns (bool) {
-        GroupInfo storage group = _groupInfo[groupId];
-        return group.activatedRound != 0 && !group.isDeactivated;
+        return _groupInfo[groupId].isActive;
     }
 
     function canVerify(
@@ -362,7 +365,7 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
                 i
             );
             GroupInfo storage group = _groupInfo[groupId];
-            if (group.activatedRound != 0 && !group.isDeactivated) {
+            if (group.isActive) {
                 totalStaked += group.stakedAmount;
             }
         }
@@ -378,9 +381,20 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
                 i
             );
             GroupInfo storage group = _groupInfo[groupId];
-            if (group.activatedRound != 0 && !group.isDeactivated) {
+            if (group.isActive) {
                 totalCapacity += group.capacity;
                 totalStaked += group.stakedAmount;
+            }
+        }
+    }
+
+    function _removeFromActiveGroupIds(uint256 groupId) internal {
+        uint256 length = _activeGroupIds.length;
+        for (uint256 i = 0; i < length; i++) {
+            if (_activeGroupIds[i] == groupId) {
+                _activeGroupIds[i] = _activeGroupIds[length - 1];
+                _activeGroupIds.pop();
+                break;
             }
         }
     }

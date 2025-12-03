@@ -60,8 +60,7 @@ abstract contract GroupTokenJoin is
         // Validate group and membership
         if (!isFirstJoin && info.groupId != groupId)
             revert AlreadyInOtherGroup();
-        if (group.activatedRound == 0 || group.isDeactivated)
-            revert CannotJoinDeactivatedGroup();
+        if (!group.isActive) revert CannotJoinDeactivatedGroup();
 
         // Validate amount
         if (isFirstJoin) {

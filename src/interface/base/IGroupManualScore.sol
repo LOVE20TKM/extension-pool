@@ -128,4 +128,12 @@ interface IGroupDistrust {
         uint256 round,
         uint256 groupId
     ) external view returns (uint256);
+
+    /// @notice Get distrust ratio components for a group owner
+    /// @return distrustVotes Distrust votes received by the group owner (numerator)
+    /// @return totalVerifyVotes Total non-abstain verify votes (denominator)
+    function distrustRatioByGroupOwner(
+        uint256 round,
+        address groupOwner
+    ) external view returns (uint256 distrustVotes, uint256 totalVerifyVotes);
 }
