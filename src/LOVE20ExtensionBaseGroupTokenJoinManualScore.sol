@@ -139,8 +139,7 @@ abstract contract LOVE20ExtensionBaseGroupTokenJoinManualScore is
 
     /// @inheritdoc IGroupSnapshot
     function snapshotIfNeeded(uint256 groupId) public {
-        uint256 currentRound = _verify.currentRound();
-        _snapshotIfNeeded(currentRound, groupId);
+        _snapshotIfNeeded(groupId);
     }
 
     /// @inheritdoc IGroupSnapshot
@@ -262,10 +261,10 @@ abstract contract LOVE20ExtensionBaseGroupTokenJoinManualScore is
         uint256 groupId,
         uint256[] calldata scores
     ) external {
-        uint256 currentRound = _verify.currentRound();
-
         // Trigger snapshot first
-        _snapshotIfNeeded(currentRound, groupId);
+        _snapshotIfNeeded(groupId);
+
+        uint256 currentRound = _verify.currentRound();
 
         // Check caller is the verifier at snapshot time
         address verifier = _snapshotVerifierByGroupId[currentRound][groupId];
@@ -535,7 +534,8 @@ abstract contract LOVE20ExtensionBaseGroupTokenJoinManualScore is
 
     // ============ Internal - Snapshot ============
 
-    function _snapshotIfNeeded(uint256 round, uint256 groupId) internal {
+    function _snapshotIfNeeded(uint256 groupId) internal {
+        uint256 round = _verify.currentRound();
         if (_hasSnapshot[round][groupId]) return;
 
         // Only create snapshot in verify phase (round > 0 and group was active)
@@ -721,17 +721,13 @@ abstract contract LOVE20ExtensionBaseGroupTokenJoinManualScore is
         uint256 groupId,
         address /* account */
     ) internal virtual override {
-        // Trigger snapshot when joining during verify phase
-        uint256 currentRound = _verify.currentRound();
-        _snapshotIfNeeded(currentRound, groupId);
+        _snapshotIfNeeded(groupId);
     }
 
     function _beforeExit(
         uint256 groupId,
         address /* account */
     ) internal virtual override {
-        // Trigger snapshot when exiting during verify phase
-        uint256 currentRound = _verify.currentRound();
-        _snapshotIfNeeded(currentRound, groupId);
+        _snapshotIfNeeded(groupId);
     }
 }
