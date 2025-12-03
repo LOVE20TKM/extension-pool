@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
-interface IGroupManager {
+interface IGroupCore {
     // ============ Errors ============
 
     error GroupNotFound();
@@ -120,7 +120,9 @@ interface IGroupManager {
     function calculateJoinMaxAmount() external view returns (uint256);
     function maxCapacityForOwner(address owner) external view returns (uint256);
     function totalStakedByOwner(address owner) external view returns (uint256);
-    function expandableInfo()
+    function expandableInfo(
+        address owner
+    )
         external
         view
         returns (

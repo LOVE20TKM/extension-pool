@@ -2,7 +2,7 @@
 pragma solidity =0.8.17;
 
 import {GroupTokenJoin} from "./base/GroupTokenJoin.sol";
-import {GroupManager} from "./base/GroupManager.sol";
+import {GroupCore} from "./base/GroupCore.sol";
 import {IExtensionExit} from "@extension/src/interface/base/IExtensionExit.sol";
 import {ExtensionAccounts} from "@extension/src/base/ExtensionAccounts.sol";
 import {
@@ -47,7 +47,7 @@ abstract contract LOVE20ExtensionBaseGroupTokenJoin is
         uint256 minJoinAmount_
     )
         GroupTokenJoin(joinTokenAddress_)
-        GroupManager(
+        GroupCore(
             factory_,
             tokenAddress_,
             groupAddress_,

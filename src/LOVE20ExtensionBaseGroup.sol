@@ -6,7 +6,7 @@ import {ExtensionAccounts} from "@extension/src/base/ExtensionAccounts.sol";
 import {
     ExtensionVerificationInfo
 } from "@extension/src/base/ExtensionVerificationInfo.sol";
-import {GroupManager} from "./base/GroupManager.sol";
+import {GroupCore} from "./base/GroupCore.sol";
 import {ILOVE20Extension} from "@extension/src/interface/ILOVE20Extension.sol";
 import {ILOVE20Stake} from "@core/interfaces/ILOVE20Stake.sol";
 
@@ -18,7 +18,7 @@ abstract contract LOVE20ExtensionBaseGroup is
     ExtensionCore,
     ExtensionAccounts,
     ExtensionVerificationInfo,
-    GroupManager,
+    GroupCore,
     ILOVE20Extension
 {
     // ============================================
@@ -46,7 +46,7 @@ abstract contract LOVE20ExtensionBaseGroup is
         uint256 maxJoinAmountMultiplier_,
         uint256 minJoinAmount_
     )
-        GroupManager(
+        GroupCore(
             factory_,
             tokenAddress_,
             groupAddress_,

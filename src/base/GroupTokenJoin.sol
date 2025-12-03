@@ -2,7 +2,7 @@
 pragma solidity =0.8.17;
 
 import {IGroupTokenJoin} from "../interface/base/IGroupTokenJoin.sol";
-import {GroupManager} from "./GroupManager.sol";
+import {GroupCore} from "./GroupCore.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {
     ReentrancyGuard
@@ -14,7 +14,7 @@ using RoundUint256History for RoundUint256History.History;
 /// @title GroupTokenJoin
 /// @notice Handles token-based group joining and exiting
 abstract contract GroupTokenJoin is
-    GroupManager,
+    GroupCore,
     ReentrancyGuard,
     IGroupTokenJoin
 {

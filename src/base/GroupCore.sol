@@ -6,11 +6,11 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ILOVE20Token} from "@core/interfaces/ILOVE20Token.sol";
 import {ILOVE20Stake} from "@core/interfaces/ILOVE20Stake.sol";
 import {ExtensionCore} from "@extension/src/base/ExtensionCore.sol";
-import {IGroupManager} from "../interface/base/IGroupManager.sol";
+import {IGroupCore} from "../interface/base/IGroupCore.sol";
 
-/// @title GroupManager
+/// @title GroupCore
 /// @notice Base contract for managing groups with LOVE20Group NFT integration
-abstract contract GroupManager is ExtensionCore, IGroupManager {
+abstract contract GroupCore is ExtensionCore, IGroupCore {
     // ============ Immutables ============
 
     address public immutable GROUP_ADDRESS;
@@ -279,7 +279,9 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
         return _totalStakedByOwner(owner);
     }
 
-    function expandableInfo()
+    function expandableInfo(
+        address owner
+    )
         public
         view
         returns (
@@ -290,7 +292,6 @@ abstract contract GroupManager is ExtensionCore, IGroupManager {
             uint256 additionalStakeAllowed
         )
     {
-        address owner = msg.sender;
         (currentCapacity, currentStake) = _totalCapacityAndStakeByOwner(owner);
         maxCapacity = _calculateMaxCapacityForOwner(owner);
         maxStake = maxCapacity / STAKING_MULTIPLIER;
