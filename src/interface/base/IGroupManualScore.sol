@@ -90,7 +90,7 @@ interface IGroupScore {
 }
 
 /// @title IGroupDistrust
-/// @notice Interface for distrust voting mechanism
+/// @notice Interface for distrust voting mechanism against group owners
 interface IGroupDistrust {
     // ============ Errors ============
 
@@ -103,7 +103,7 @@ interface IGroupDistrust {
 
     event DistrustVoted(
         uint256 indexed round,
-        uint256 indexed groupId,
+        address indexed groupOwner,
         address indexed voter,
         uint256 amount,
         string reason
@@ -112,12 +112,17 @@ interface IGroupDistrust {
     // ============ Write Functions ============
 
     function distrustVote(
-        uint256 groupId,
+        address groupOwner,
         uint256 amount,
         string calldata reason
     ) external;
 
     // ============ View Functions ============
+
+    function distrustVotesByGroupOwner(
+        uint256 round,
+        address groupOwner
+    ) external view returns (uint256);
 
     function distrustVotesByGroupId(
         uint256 round,
