@@ -3,7 +3,6 @@ pragma solidity =0.8.17;
 
 import {GroupTokenJoin} from "./GroupTokenJoin.sol";
 import {IGroupSnapshot} from "../interface/base/IGroupManualScore.sol";
-import {ILOVE20Group} from "@group/interfaces/ILOVE20Group.sol";
 
 /// @title GroupTokenJoinSnapshot
 /// @notice Handles snapshot creation for token-join group participation data
@@ -25,22 +24,11 @@ abstract contract GroupTokenJoinSnapshot is GroupTokenJoin, IGroupSnapshot {
     /// @dev round => total amount snapshot
     mapping(uint256 => uint256) internal _snapshotAmount;
 
-    /// @dev round => groupId => verifier address at snapshot time
-    mapping(uint256 => mapping(uint256 => address))
-        internal _snapshotVerifierByGroupId;
-
-    /// @dev round => verifier => list of snapshotted group ids
-    mapping(uint256 => mapping(address => uint256[]))
-        internal _snapshotGroupIdsByVerifier;
-
     /// @dev round => groupId => whether snapshot exists
     mapping(uint256 => mapping(uint256 => bool)) internal _hasSnapshot;
 
     /// @dev round => list of snapshotted group ids
     mapping(uint256 => uint256[]) internal _snapshotGroupIds;
-
-    /// @dev round => list of snapshotted verifiers
-    mapping(uint256 => address[]) internal _snapshotVerifiers;
 
     // ============ IGroupSnapshot Implementation ============
 
@@ -117,53 +105,6 @@ abstract contract GroupTokenJoinSnapshot is GroupTokenJoin, IGroupSnapshot {
         return _snapshotGroupIds[round][index];
     }
 
-    /// @inheritdoc IGroupSnapshot
-    function snapshotVerifiers(
-        uint256 round
-    ) external view returns (address[] memory) {
-        return _snapshotVerifiers[round];
-    }
-
-    /// @inheritdoc IGroupSnapshot
-    function snapshotVerifiersCount(
-        uint256 round
-    ) external view returns (uint256) {
-        return _snapshotVerifiers[round].length;
-    }
-
-    /// @inheritdoc IGroupSnapshot
-    function snapshotVerifiersAtIndex(
-        uint256 round,
-        uint256 index
-    ) external view returns (address) {
-        return _snapshotVerifiers[round][index];
-    }
-
-    /// @inheritdoc IGroupSnapshot
-    function snapshotGroupIdsByVerifier(
-        uint256 round,
-        address verifier
-    ) external view returns (uint256[] memory) {
-        return _snapshotGroupIdsByVerifier[round][verifier];
-    }
-
-    /// @inheritdoc IGroupSnapshot
-    function snapshotGroupIdsByVerifierCount(
-        uint256 round,
-        address verifier
-    ) external view returns (uint256) {
-        return _snapshotGroupIdsByVerifier[round][verifier].length;
-    }
-
-    /// @inheritdoc IGroupSnapshot
-    function snapshotGroupIdsByVerifierAtIndex(
-        uint256 round,
-        address verifier,
-        uint256 index
-    ) external view returns (uint256) {
-        return _snapshotGroupIdsByVerifier[round][verifier][index];
-    }
-
     // ============ Internal Functions ============
 
     function _snapshotIfNeeded(uint256 groupId) internal {
@@ -192,16 +133,6 @@ abstract contract GroupTokenJoinSnapshot is GroupTokenJoin, IGroupSnapshot {
         uint256 groupAmount = group.totalJoinedAmount;
         _snapshotAmountByGroupId[round][groupId] = groupAmount;
         _snapshotAmount[round] += groupAmount;
-
-        // Snapshot verifier and record groupId under verifier
-        address owner = ILOVE20Group(GROUP_ADDRESS).ownerOf(groupId);
-        _snapshotVerifierByGroupId[round][groupId] = owner;
-
-        // Add verifier to list if first group for this verifier
-        if (_snapshotGroupIdsByVerifier[round][owner].length == 0) {
-            _snapshotVerifiers[round].push(owner);
-        }
-        _snapshotGroupIdsByVerifier[round][owner].push(groupId);
 
         emit SnapshotCreated(round, groupId);
     }

@@ -130,23 +130,20 @@ abstract contract GroupTokenJoinSnapshotManualScoreDistrust is
         uint256 distrustVotes = _distrustVotesByGroupOwner[round][groupOwner];
         uint256 totalVerifyVotes = _getTotalNonAbstainVerifyVotes(round);
 
-        uint256[] storage groupIds = _snapshotGroupIdsByVerifier[round][
-            groupOwner
-        ];
+        uint256[] storage groupIds = _groupIdsByVerifier[round][groupOwner];
         for (uint256 i = 0; i < groupIds.length; i++) {
             uint256 groupId = groupIds[i];
-            if (_scoreSubmitted[round][groupId]) {
-                uint256 oldScore = _scoreByGroupId[round][groupId];
-                uint256 groupAmount = _snapshotAmountByGroupId[round][groupId];
+            // All groups in _groupIdsByVerifier are already verified
+            uint256 oldScore = _scoreByGroupId[round][groupId];
+            uint256 groupAmount = _snapshotAmountByGroupId[round][groupId];
 
-                uint256 newScore = totalVerifyVotes == 0
-                    ? groupAmount
-                    : (groupAmount * (totalVerifyVotes - distrustVotes)) /
-                        totalVerifyVotes;
+            uint256 newScore = totalVerifyVotes == 0
+                ? groupAmount
+                : (groupAmount * (totalVerifyVotes - distrustVotes)) /
+                    totalVerifyVotes;
 
-                _scoreByGroupId[round][groupId] = newScore;
-                _score[round] = _score[round] - oldScore + newScore;
-            }
+            _scoreByGroupId[round][groupId] = newScore;
+            _score[round] = _score[round] - oldScore + newScore;
         }
     }
 

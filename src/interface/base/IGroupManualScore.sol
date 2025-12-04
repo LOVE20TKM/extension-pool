@@ -65,39 +65,6 @@ interface IGroupSnapshot {
         uint256 round,
         uint256 index
     ) external view returns (uint256);
-
-    // Verifiers
-
-    function snapshotVerifiers(
-        uint256 round
-    ) external view returns (address[] memory);
-
-    function snapshotVerifiersCount(
-        uint256 round
-    ) external view returns (uint256);
-
-    function snapshotVerifiersAtIndex(
-        uint256 round,
-        uint256 index
-    ) external view returns (address);
-
-    // GroupIds by Verifier
-
-    function snapshotGroupIdsByVerifier(
-        uint256 round,
-        address verifier
-    ) external view returns (uint256[] memory);
-
-    function snapshotGroupIdsByVerifierCount(
-        uint256 round,
-        address verifier
-    ) external view returns (uint256);
-
-    function snapshotGroupIdsByVerifierAtIndex(
-        uint256 round,
-        address verifier,
-        uint256 index
-    ) external view returns (uint256);
 }
 
 // ============ Constants ============
@@ -163,6 +130,40 @@ interface IGroupScore {
         address account,
         uint256 groupId
     ) external view returns (bool);
+
+    // Verifiers (recorded at verification time)
+
+    function verifiers(uint256 round) external view returns (address[] memory);
+
+    function verifiersCount(uint256 round) external view returns (uint256);
+
+    function verifiersAtIndex(
+        uint256 round,
+        uint256 index
+    ) external view returns (address);
+
+    function verifierByGroupId(
+        uint256 round,
+        uint256 groupId
+    ) external view returns (address);
+
+    // GroupIds by Verifier
+
+    function groupIdsByVerifier(
+        uint256 round,
+        address verifier
+    ) external view returns (uint256[] memory);
+
+    function groupIdsByVerifierCount(
+        uint256 round,
+        address verifier
+    ) external view returns (uint256);
+
+    function groupIdsByVerifierAtIndex(
+        uint256 round,
+        address verifier,
+        uint256 index
+    ) external view returns (uint256);
 }
 
 /// @title IGroupDistrust

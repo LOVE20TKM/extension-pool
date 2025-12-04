@@ -39,6 +39,16 @@ abstract contract GroupTokenJoinSnapshotManualScore is
     /// @dev round => list of verified group ids
     mapping(uint256 => uint256[]) internal _verifiedGroupIds;
 
+    /// @dev round => groupId => verifier address (recorded at verification time)
+    mapping(uint256 => mapping(uint256 => address)) internal _verifierByGroupId;
+
+    /// @dev round => verifier => list of verified group ids
+    mapping(uint256 => mapping(address => uint256[]))
+        internal _groupIdsByVerifier;
+
+    /// @dev round => list of verifiers
+    mapping(uint256 => address[]) internal _verifiers;
+
     // ============ IGroupScore Implementation ============
 
     /// @inheritdoc IGroupScore
@@ -59,10 +69,12 @@ abstract contract GroupTokenJoinSnapshotManualScore is
 
         uint256 currentRound = _verify.currentRound();
 
-        // Check caller is the verifier at snapshot time or delegated verifier
-        address verifier = _snapshotVerifierByGroupId[currentRound][groupId];
+        // Get current NFT owner as the verifier
+        address groupOwner = ILOVE20Group(GROUP_ADDRESS).ownerOf(groupId);
+
+        // Check caller is the group owner or delegated verifier
         if (
-            msg.sender != verifier &&
+            msg.sender != groupOwner &&
             msg.sender != _delegatedVerifierByGroupId[groupId]
         ) {
             revert NotVerifier();
@@ -84,9 +96,17 @@ abstract contract GroupTokenJoinSnapshotManualScore is
             revert ScoresCountMismatch();
         }
 
-        // Check verifier capacity limit
-        address groupOwner = ILOVE20Group(GROUP_ADDRESS).ownerOf(groupId);
+        // Check verifier capacity limit (using recorded verified groups)
         _checkVerifierCapacity(currentRound, groupOwner, groupId);
+
+        // Record verifier (NFT owner, not delegated verifier)
+        _verifierByGroupId[currentRound][groupId] = groupOwner;
+
+        // Add verifier to list if first verified group for this verifier
+        if (_groupIdsByVerifier[currentRound][groupOwner].length == 0) {
+            _verifiers[currentRound].push(groupOwner);
+        }
+        _groupIdsByVerifier[currentRound][groupOwner].push(groupId);
 
         // Process scores and calculate total score
         uint256 totalScore = 0;
@@ -153,15 +173,61 @@ abstract contract GroupTokenJoinSnapshotManualScore is
         address account,
         uint256 groupId
     ) public view returns (bool) {
-        uint256 round = _verify.currentRound();
-        address verifier = _snapshotVerifierByGroupId[round][groupId];
-        // If no snapshot exists, fall back to current owner
-        if (verifier == address(0)) {
-            verifier = ILOVE20Group(GROUP_ADDRESS).ownerOf(groupId);
-        }
+        address groupOwner = ILOVE20Group(GROUP_ADDRESS).ownerOf(groupId);
         return
-            account == verifier ||
+            account == groupOwner ||
             account == _delegatedVerifierByGroupId[groupId];
+    }
+
+    /// @inheritdoc IGroupScore
+    function verifiers(uint256 round) external view returns (address[] memory) {
+        return _verifiers[round];
+    }
+
+    /// @inheritdoc IGroupScore
+    function verifiersCount(uint256 round) external view returns (uint256) {
+        return _verifiers[round].length;
+    }
+
+    /// @inheritdoc IGroupScore
+    function verifiersAtIndex(
+        uint256 round,
+        uint256 index
+    ) external view returns (address) {
+        return _verifiers[round][index];
+    }
+
+    /// @inheritdoc IGroupScore
+    function verifierByGroupId(
+        uint256 round,
+        uint256 groupId
+    ) external view returns (address) {
+        return _verifierByGroupId[round][groupId];
+    }
+
+    /// @inheritdoc IGroupScore
+    function groupIdsByVerifier(
+        uint256 round,
+        address verifier
+    ) external view returns (uint256[] memory) {
+        return _groupIdsByVerifier[round][verifier];
+    }
+
+    /// @inheritdoc IGroupScore
+    function groupIdsByVerifierCount(
+        uint256 round,
+        address verifier
+    ) external view returns (uint256) {
+        return _groupIdsByVerifier[round][verifier].length;
+    }
+
+    /// @inheritdoc IGroupScore
+    function groupIdsByVerifierAtIndex(
+        uint256 round,
+        address verifier,
+        uint256 index
+    ) external view returns (uint256) {
+        return _groupIdsByVerifier[round][verifier][index];
     }
 
     // ============ Internal Functions ============
@@ -182,19 +248,18 @@ abstract contract GroupTokenJoinSnapshotManualScore is
         address groupOwner,
         uint256 currentGroupId
     ) internal view {
+        // Sum capacity from already verified groups by this verifier
         uint256 verifiedCapacity = 0;
-        uint256 nftBalance = ILOVE20Group(GROUP_ADDRESS).balanceOf(groupOwner);
-
-        for (uint256 i = 0; i < nftBalance; i++) {
-            uint256 groupId = ILOVE20Group(GROUP_ADDRESS).tokenOfOwnerByIndex(
-                groupOwner,
-                i
-            );
-            if (groupId != currentGroupId && _scoreSubmitted[round][groupId]) {
-                verifiedCapacity += _snapshotAmountByGroupId[round][groupId];
-            }
+        uint256[] storage verifiedGroupIds = _groupIdsByVerifier[round][
+            groupOwner
+        ];
+        for (uint256 i = 0; i < verifiedGroupIds.length; i++) {
+            verifiedCapacity += _snapshotAmountByGroupId[round][
+                verifiedGroupIds[i]
+            ];
         }
 
+        // Add current group's capacity
         verifiedCapacity += _snapshotAmountByGroupId[round][currentGroupId];
 
         uint256 maxCapacity = _calculateMaxCapacityForOwner(groupOwner);

@@ -51,9 +51,7 @@ abstract contract GroupTokenJoinSnapshotManualScoreDistrustReward is
         uint256 round,
         address groupOwner
     ) external view returns (uint256 amount) {
-        uint256[] storage groupIds = _snapshotGroupIdsByVerifier[round][
-            groupOwner
-        ];
+        uint256[] storage groupIds = _groupIdsByVerifier[round][groupOwner];
         for (uint256 i = 0; i < groupIds.length; i++) {
             amount += _calculateRewardByGroupId(round, groupIds[i]);
         }
