@@ -37,19 +37,11 @@ interface IGroupCore {
         uint256 newMinJoinAmount,
         uint256 newMaxJoinAmount
     );
-    event GroupDelegatedVerifierSet(
-        uint256 indexed groupId,
-        address indexed delegatedVerifier
-    );
-
     // ============ Structs ============
 
     /// @notice Group information (owner retrieved via NFT ownerOf)
     struct GroupInfo {
         uint256 groupId;
-        /// @notice Delegated verifier address that can verify on behalf of the group owner
-        /// @dev If address(0), only owner can verify; otherwise both owner and delegated verifier can verify
-        address delegatedVerifier;
         string description;
         uint256 stakedAmount;
         uint256 capacity;
@@ -82,11 +74,6 @@ interface IGroupCore {
         uint256 newMaxJoinAmount
     ) external;
 
-    function setGroupDelegatedVerifier(
-        uint256 groupId,
-        address delegatedVerifier
-    ) external;
-
     // ============ View Functions ============
 
     function groupInfo(
@@ -102,10 +89,6 @@ interface IGroupCore {
     ) external view returns (uint256 groupId);
 
     function isGroupActive(uint256 groupId) external view returns (bool);
-    function canVerify(
-        address account,
-        uint256 groupId
-    ) external view returns (bool);
 
     // --- Config Parameters (immutable) ---
     function GROUP_ADDRESS() external view returns (address);

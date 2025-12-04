@@ -16,6 +16,9 @@ abstract contract GroupTokenJoinSnapshotManualScore is
 {
     // ============ State ============
 
+    /// @dev groupId => delegated verifier address
+    mapping(uint256 => address) internal _delegatedVerifierByGroupId;
+
     /// @dev round => account => origin score [0-100]
     mapping(uint256 => mapping(address => uint256))
         internal _originScoreByAccount;
@@ -39,6 +42,15 @@ abstract contract GroupTokenJoinSnapshotManualScore is
     // ============ IGroupScore Implementation ============
 
     /// @inheritdoc IGroupScore
+    function setGroupDelegatedVerifier(
+        uint256 groupId,
+        address delegatedVerifier
+    ) public virtual onlyGroupOwner(groupId) groupActive(groupId) {
+        _delegatedVerifierByGroupId[groupId] = delegatedVerifier;
+        emit GroupDelegatedVerifierSet(groupId, delegatedVerifier);
+    }
+
+    /// @inheritdoc IGroupScore
     function submitOriginScore(
         uint256 groupId,
         uint256[] calldata scores
@@ -47,11 +59,11 @@ abstract contract GroupTokenJoinSnapshotManualScore is
 
         uint256 currentRound = _verify.currentRound();
 
-        // Check caller is the verifier at snapshot time
+        // Check caller is the verifier at snapshot time or delegated verifier
         address verifier = _snapshotVerifierByGroupId[currentRound][groupId];
         if (
             msg.sender != verifier &&
-            msg.sender != _groupInfo[groupId].delegatedVerifier
+            msg.sender != _delegatedVerifierByGroupId[groupId]
         ) {
             revert NotVerifier();
         }
@@ -127,6 +139,29 @@ abstract contract GroupTokenJoinSnapshotManualScore is
     /// @inheritdoc IGroupScore
     function score(uint256 round) external view returns (uint256) {
         return _score[round];
+    }
+
+    /// @inheritdoc IGroupScore
+    function delegatedVerifierByGroupId(
+        uint256 groupId
+    ) external view returns (address) {
+        return _delegatedVerifierByGroupId[groupId];
+    }
+
+    /// @inheritdoc IGroupScore
+    function canVerify(
+        address account,
+        uint256 groupId
+    ) public view returns (bool) {
+        uint256 round = _verify.currentRound();
+        address verifier = _snapshotVerifierByGroupId[round][groupId];
+        // If no snapshot exists, fall back to current owner
+        if (verifier == address(0)) {
+            verifier = ILOVE20Group(GROUP_ADDRESS).ownerOf(groupId);
+        }
+        return
+            account == verifier ||
+            account == _delegatedVerifierByGroupId[groupId];
     }
 
     // ============ Internal Functions ============

@@ -202,14 +202,6 @@ abstract contract GroupCore is ExtensionReward, IGroupCore {
         );
     }
 
-    function setGroupDelegatedVerifier(
-        uint256 groupId,
-        address delegatedVerifier
-    ) public virtual onlyGroupOwner(groupId) groupActive(groupId) {
-        _groupInfo[groupId].delegatedVerifier = delegatedVerifier;
-        emit GroupDelegatedVerifierSet(groupId, delegatedVerifier);
-    }
-
     // ============ View Functions ============
 
     function groupInfo(
@@ -257,16 +249,6 @@ abstract contract GroupCore is ExtensionReward, IGroupCore {
 
     function isGroupActive(uint256 groupId) external view returns (bool) {
         return _groupInfo[groupId].isActive;
-    }
-
-    function canVerify(
-        address account,
-        uint256 groupId
-    ) public view returns (bool) {
-        address owner = ILOVE20Group(GROUP_ADDRESS).ownerOf(groupId);
-        return
-            account == owner ||
-            account == _groupInfo[groupId].delegatedVerifier;
     }
 
     // ============ Capacity View Functions ============

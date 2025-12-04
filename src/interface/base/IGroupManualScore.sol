@@ -119,12 +119,21 @@ interface IGroupScore {
     // ============ Events ============
 
     event ScoreSubmitted(uint256 indexed round, uint256 indexed groupId);
+    event GroupDelegatedVerifierSet(
+        uint256 indexed groupId,
+        address indexed delegatedVerifier
+    );
 
     // ============ Write Functions ============
 
     function submitOriginScore(
         uint256 groupId,
         uint256[] calldata scores
+    ) external;
+
+    function setGroupDelegatedVerifier(
+        uint256 groupId,
+        address delegatedVerifier
     ) external;
 
     // ============ View Functions ============
@@ -145,6 +154,15 @@ interface IGroupScore {
     ) external view returns (uint256);
 
     function score(uint256 round) external view returns (uint256);
+
+    function delegatedVerifierByGroupId(
+        uint256 groupId
+    ) external view returns (address);
+
+    function canVerify(
+        address account,
+        uint256 groupId
+    ) external view returns (bool);
 }
 
 /// @title IGroupDistrust
