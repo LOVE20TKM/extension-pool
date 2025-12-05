@@ -123,8 +123,8 @@ contract LOVE20ExtensionGroupService is
         view
         returns (address[] memory addrs, uint256[] memory basisPoints)
     {
-        addrs = _recipientsHistory[groupOwner].value(round);
-        basisPoints = _basisPointsHistory[groupOwner].value(round);
+        addrs = _recipientsHistory[groupOwner].values(round);
+        basisPoints = _basisPointsHistory[groupOwner].values(round);
     }
 
     /// @notice Get latest recipients for a group owner
@@ -135,8 +135,8 @@ contract LOVE20ExtensionGroupService is
         view
         returns (address[] memory addrs, uint256[] memory basisPoints)
     {
-        addrs = _recipientsHistory[groupOwner].latestValue();
-        basisPoints = _basisPointsHistory[groupOwner].latestValue();
+        addrs = _recipientsHistory[groupOwner].latestValues();
+        basisPoints = _basisPointsHistory[groupOwner].latestValues();
     }
 
     /// @notice Get reward amount for a specific recipient at a round
@@ -148,8 +148,8 @@ contract LOVE20ExtensionGroupService is
         (uint256 totalAmount, ) = rewardByAccount(round, groupOwner);
         if (totalAmount == 0) return 0;
 
-        address[] memory addrs = _recipientsHistory[groupOwner].value(round);
-        uint256[] memory basisPoints = _basisPointsHistory[groupOwner].value(
+        address[] memory addrs = _recipientsHistory[groupOwner].values(round);
+        uint256[] memory basisPoints = _basisPointsHistory[groupOwner].values(
             round
         );
 
@@ -170,6 +170,34 @@ contract LOVE20ExtensionGroupService is
         }
 
         return (totalAmount * recipientBasisPoints) / BASIS_POINTS_BASE;
+    }
+
+    /// @notice Get reward distribution for a group owner at a round
+    function rewardDistribution(
+        uint256 round,
+        address groupOwner
+    )
+        external
+        view
+        returns (
+            address[] memory addrs,
+            uint256[] memory basisPoints,
+            uint256[] memory amounts,
+            uint256 ownerAmount
+        )
+    {
+        (uint256 totalAmount, ) = rewardByAccount(round, groupOwner);
+
+        addrs = _recipientsHistory[groupOwner].values(round);
+        basisPoints = _basisPointsHistory[groupOwner].values(round);
+        amounts = new uint256[](addrs.length);
+
+        uint256 distributed;
+        for (uint256 i = 0; i < addrs.length; i++) {
+            amounts[i] = (totalAmount * basisPoints[i]) / BASIS_POINTS_BASE;
+            distributed += amounts[i];
+        }
+        ownerAmount = totalAmount - distributed;
     }
 
     // ============ IExtensionJoinedValue Implementation ============
@@ -227,11 +255,11 @@ contract LOVE20ExtensionGroupService is
 
         if (amount > 0) {
             ILOVE20Token token = ILOVE20Token(tokenAddress);
-            address[] memory addrs = _recipientsHistory[msg.sender].value(
+            address[] memory addrs = _recipientsHistory[msg.sender].values(
                 round
             );
             uint256[] memory basisPoints = _basisPointsHistory[msg.sender]
-                .value(round);
+                .values(round);
 
             uint256 distributed;
             for (uint256 i = 0; i < addrs.length; i++) {
