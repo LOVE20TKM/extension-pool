@@ -103,7 +103,14 @@ abstract contract GroupTokenJoin is
             _addAccount(msg.sender);
         }
 
-        emit Join(groupId, msg.sender, amount, currentRound);
+        emit Join(
+            tokenAddress,
+            currentRound,
+            actionId,
+            groupId,
+            msg.sender,
+            amount
+        );
     }
 
     function exit() public virtual nonReentrant {
@@ -135,7 +142,14 @@ abstract contract GroupTokenJoin is
         // Transfer tokens back
         _joinToken.transfer(msg.sender, amount);
 
-        emit Exit(groupId, msg.sender, amount, currentRound);
+        emit Exit(
+            tokenAddress,
+            currentRound,
+            actionId,
+            groupId,
+            msg.sender,
+            amount
+        );
     }
 
     // ============ View Functions ============

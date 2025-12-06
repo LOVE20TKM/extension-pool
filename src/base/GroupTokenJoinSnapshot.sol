@@ -134,7 +134,7 @@ abstract contract GroupTokenJoinSnapshot is GroupTokenJoin, IGroupSnapshot {
         _snapshotAmountByGroupId[round][groupId] = groupAmount;
         _snapshotAmount[round] += groupAmount;
 
-        emit SnapshotCreated(round, groupId);
+        emit SnapshotCreate(tokenAddress, round, actionId, groupId);
     }
 
     // ============ Override Hooks ============

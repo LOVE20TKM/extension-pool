@@ -18,16 +18,20 @@ interface IGroupTokenJoin {
     // ============ Events ============
 
     event Join(
+        address indexed tokenAddress,
+        uint256 round,
+        uint256 indexed actionId,
         uint256 indexed groupId,
-        address indexed account,
-        uint256 amount,
-        uint256 indexed round
+        address account,
+        uint256 amount
     );
     event Exit(
+        address indexed tokenAddress,
+        uint256 round,
+        uint256 indexed actionId,
         uint256 indexed groupId,
-        address indexed account,
-        uint256 amount,
-        uint256 indexed round
+        address account,
+        uint256 amount
     );
 
     // ============ Structs ============

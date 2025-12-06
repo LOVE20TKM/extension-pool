@@ -96,17 +96,18 @@ abstract contract GroupCore is ExtensionReward, IGroupCore {
         );
 
         // Initialize group
-        uint256 stakedCapacity = stakedAmount * STAKING_MULTIPLIER;
-        uint256 maxCapacity = _calculateMaxCapacityForOwner(owner);
-        uint256 capacity = stakedCapacity < maxCapacity
-            ? stakedCapacity
-            : maxCapacity;
+        {
+            uint256 stakedCapacity = stakedAmount * STAKING_MULTIPLIER;
+            uint256 maxCapacity = _calculateMaxCapacityForOwner(owner);
+            group.capacity = stakedCapacity < maxCapacity
+                ? stakedCapacity
+                : maxCapacity;
+        }
         uint256 currentRound = _join.currentRound();
 
         group.groupId = groupId;
         group.description = description;
         group.stakedAmount = stakedAmount;
-        group.capacity = capacity;
         group.groupMinJoinAmount = groupMinJoinAmount;
         group.groupMaxJoinAmount = groupMaxJoinAmount;
         group.activatedRound = currentRound;
@@ -116,12 +117,14 @@ abstract contract GroupCore is ExtensionReward, IGroupCore {
         _activeGroupIds.push(groupId);
         _totalStaked += stakedAmount;
 
-        emit GroupActivated(
+        emit GroupActivate(
+            tokenAddress,
+            currentRound,
+            actionId,
             groupId,
             owner,
-            stakedAmount,
-            capacity,
-            currentRound
+            group.stakedAmount,
+            group.capacity
         );
         return true;
     }
@@ -152,7 +155,14 @@ abstract contract GroupCore is ExtensionReward, IGroupCore {
         group.capacity = newCapacity;
         _totalStaked += additionalStake;
 
-        emit GroupExpanded(groupId, additionalStake, newCapacity);
+        emit GroupExpand(
+            tokenAddress,
+            _join.currentRound(),
+            actionId,
+            groupId,
+            additionalStake,
+            newCapacity
+        );
     }
 
     function deactivateGroup(
@@ -176,7 +186,13 @@ abstract contract GroupCore is ExtensionReward, IGroupCore {
         _totalStaked -= stakedAmount;
         IERC20(STAKE_TOKEN_ADDRESS).transfer(msg.sender, stakedAmount);
 
-        emit GroupDeactivated(groupId, currentRound, stakedAmount);
+        emit GroupDeactivate(
+            tokenAddress,
+            currentRound,
+            actionId,
+            groupId,
+            stakedAmount
+        );
     }
 
     function updateGroupInfo(
@@ -194,7 +210,10 @@ abstract contract GroupCore is ExtensionReward, IGroupCore {
         group.groupMinJoinAmount = newMinJoinAmount;
         group.groupMaxJoinAmount = newMaxJoinAmount;
 
-        emit GroupInfoUpdated(
+        emit GroupInfoUpdate(
+            tokenAddress,
+            _join.currentRound(),
+            actionId,
             groupId,
             newDescription,
             newMinJoinAmount,

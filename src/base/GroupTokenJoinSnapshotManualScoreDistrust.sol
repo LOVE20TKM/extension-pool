@@ -68,8 +68,10 @@ abstract contract GroupTokenJoinSnapshotManualScoreDistrust is
         // Update distrust for all active groups owned by this owner
         _updateDistrustForOwnerGroups(currentRound, groupOwner);
 
-        emit DistrustVoted(
+        emit DistrustVote(
+            tokenAddress,
             currentRound,
+            actionId,
             groupOwner,
             msg.sender,
             amount,

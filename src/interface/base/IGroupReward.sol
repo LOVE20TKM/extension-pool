@@ -14,7 +14,12 @@ interface IGroupReward is IExtensionReward {
 
     // ============ Events ============
 
-    event UnclaimedRewardBurned(uint256 indexed round, uint256 amount);
+    event UnclaimedRewardBurn(
+        address indexed tokenAddress,
+        uint256 round,
+        uint256 indexed actionId,
+        uint256 amount
+    );
 
     // ============ Functions ============
 

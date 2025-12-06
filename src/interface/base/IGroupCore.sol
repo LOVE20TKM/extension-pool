@@ -18,24 +18,34 @@ interface IGroupCore {
 
     // ============ Events ============
 
-    event GroupActivated(
+    event GroupActivate(
+        address indexed tokenAddress,
+        uint256 round,
+        uint256 indexed actionId,
         uint256 indexed groupId,
-        address indexed owner,
+        address owner,
         uint256 stakedAmount,
-        uint256 capacity,
-        uint256 round
+        uint256 capacity
     );
-    event GroupExpanded(
+    event GroupExpand(
+        address indexed tokenAddress,
+        uint256 round,
+        uint256 indexed actionId,
         uint256 indexed groupId,
         uint256 additionalStake,
         uint256 newCapacity
     );
-    event GroupDeactivated(
-        uint256 indexed groupId,
+    event GroupDeactivate(
+        address indexed tokenAddress,
         uint256 round,
+        uint256 indexed actionId,
+        uint256 indexed groupId,
         uint256 returnedStake
     );
-    event GroupInfoUpdated(
+    event GroupInfoUpdate(
+        address indexed tokenAddress,
+        uint256 round,
+        uint256 indexed actionId,
         uint256 indexed groupId,
         string newDescription,
         uint256 newMinJoinAmount,

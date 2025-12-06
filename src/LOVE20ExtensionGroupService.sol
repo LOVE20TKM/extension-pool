@@ -109,7 +109,14 @@ contract LOVE20ExtensionGroupService is
         _recipientsHistory[account].record(currentRound, addrs);
         _basisPointsHistory[account].record(currentRound, basisPoints);
 
-        emit RecipientsUpdated(account, currentRound, addrs, basisPoints);
+        emit RecipientsUpdate(
+            tokenAddress,
+            currentRound,
+            actionId,
+            account,
+            addrs,
+            basisPoints
+        );
     }
 
     // ============ View Functions ============
@@ -278,6 +285,6 @@ contract LOVE20ExtensionGroupService is
             }
         }
 
-        emit ClaimReward(tokenAddress, msg.sender, actionId, round, amount);
+        emit ClaimReward(tokenAddress, round, actionId, msg.sender, amount);
     }
 }

@@ -10,7 +10,12 @@ interface IGroupSnapshot {
 
     // ============ Events ============
 
-    event SnapshotCreated(uint256 indexed round, uint256 indexed groupId);
+    event SnapshotCreate(
+        address indexed tokenAddress,
+        uint256 round,
+        uint256 indexed actionId,
+        uint256 groupId
+    );
 
     // ============ Write Functions ============
 
@@ -84,10 +89,18 @@ interface IGroupScore {
 
     // ============ Events ============
 
-    event ScoreSubmitted(uint256 indexed round, uint256 indexed groupId);
+    event ScoreSubmit(
+        address indexed tokenAddress,
+        uint256 round,
+        uint256 indexed actionId,
+        uint256 groupId
+    );
     event GroupDelegatedVerifierSet(
+        address indexed tokenAddress,
+        uint256 round,
+        uint256 indexed actionId,
         uint256 indexed groupId,
-        address indexed delegatedVerifier
+        address delegatedVerifier
     );
 
     // ============ Write Functions ============
@@ -176,10 +189,12 @@ interface IGroupDistrust {
 
     // ============ Events ============
 
-    event DistrustVoted(
-        uint256 indexed round,
-        address indexed groupOwner,
-        address indexed voter,
+    event DistrustVote(
+        address indexed tokenAddress,
+        uint256 round,
+        uint256 indexed actionId,
+        address groupOwner,
+        address voter,
         uint256 amount,
         string reason
     );

@@ -34,7 +34,12 @@ abstract contract GroupTokenJoinSnapshotManualScoreDistrustReward is
         if (rewardAmount > 0 && _burnedReward[round] == 0) {
             _burnedReward[round] = rewardAmount;
             ILOVE20Token(tokenAddress).burn(rewardAmount);
-            emit UnclaimedRewardBurned(round, rewardAmount);
+            emit UnclaimedRewardBurn(
+                tokenAddress,
+                round,
+                actionId,
+                rewardAmount
+            );
         }
     }
 

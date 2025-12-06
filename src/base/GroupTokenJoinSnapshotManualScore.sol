@@ -57,7 +57,13 @@ abstract contract GroupTokenJoinSnapshotManualScore is
         address delegatedVerifier
     ) public virtual onlyGroupOwner(groupId) groupActive(groupId) {
         _delegatedVerifierByGroupId[groupId] = delegatedVerifier;
-        emit GroupDelegatedVerifierSet(groupId, delegatedVerifier);
+        emit GroupDelegatedVerifierSet(
+            tokenAddress,
+            _join.currentRound(),
+            actionId,
+            groupId,
+            delegatedVerifier
+        );
     }
 
     /// @inheritdoc IGroupScore
@@ -129,7 +135,7 @@ abstract contract GroupTokenJoinSnapshotManualScore is
         _scoreSubmitted[currentRound][groupId] = true;
         _verifiedGroupIds[currentRound].push(groupId);
 
-        emit ScoreSubmitted(currentRound, groupId);
+        emit ScoreSubmit(tokenAddress, currentRound, actionId, groupId);
     }
 
     /// @inheritdoc IGroupScore
